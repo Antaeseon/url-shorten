@@ -1,6 +1,9 @@
 package com.ts.urlshorten.application.dto;
 
+import java.io.Serializable;
+
 import lombok.Builder;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +14,7 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode
 @NoArgsConstructor
-public class UrlQueryDto {
+public class UrlQueryDto implements Serializable {
 	private String tinyUrl;
 	private String originUrl;
 	private String createdAt;

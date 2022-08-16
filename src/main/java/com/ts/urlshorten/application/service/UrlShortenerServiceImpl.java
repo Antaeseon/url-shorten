@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Transactional(readOnly = true)
 public class UrlShortenerServiceImpl implements UrlShortenerService{
-	private final RedisTemplate<String, String> redisTemplate;
+	private final RedisTemplate<String, Object> redisTemplate;
 	private final UrlMappingInfoRepository urlMappingInfoRepository;
 
 	@Override
@@ -42,24 +42,25 @@ public class UrlShortenerServiceImpl implements UrlShortenerService{
 	@Override
 	public UrlQueryDto findUrl(String tinyUrl) throws Exception {
 
-		ValueOperations<String, String> redisValue = redisTemplate.opsForValue();
-		if(Objects.requireNonNull(redisValue.get(tinyUrl)).isEmpty()){
+		ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
+		UrlQueryDto response = (UrlQueryDto)valueOperations.get(tinyUrl);
+		if(response==null){
 			UrlMappingInfo urlInfo = urlMappingInfoRepository.findByTinyUrl(tinyUrl)
 				.orElseThrow(() -> new IllegalArgumentException("잘못된 Url"));
-			redisValue.set(tinyUrl, urlInfo.getOriginUrl());
-
-			return UrlQueryDto.builder()
+			UrlQueryDto responseDto = UrlQueryDto.builder()
 				.tinyUrl(urlInfo.getTinyUrl())
 				.originUrl(urlInfo.getOriginUrl())
 				.createdAt(urlInfo.getCreatedAt().toString())
 				.build();
+			valueOperations.set(tinyUrl, responseDto);
 
+			return responseDto;
 		}else{
-			throw new Exception();
+			return response;
 		}
 
 
-		
+
 	}
 
 	@Override
